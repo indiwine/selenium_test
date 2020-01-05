@@ -8,7 +8,8 @@ try {
     driver.get(where)
         .then(_ => driver.wait(until.elementLocated(By.css(what))))
         .then(_ => driver.findElement(By.css(what)).click())
-        // .then(_ => driver.quit());
+        .then(_ => driver.findElement(By.css(what)).click())
+        .then(_ => setTimeout(() => {  driver.quit() }, 20000))
 } catch (err){
     console.log(err)
 }
