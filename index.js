@@ -1,23 +1,27 @@
-const { Builder, By, Key, until } = require("selenium-webdriver");
-var driver = new Builder().forBrowser("chrome").build();
+const {Builder, By, until} = require('selenium-webdriver');
+const fs = require('fs');
+
 var where = "https://www.shazam.com/charts/top-200/ukraine";
-var what = ".play:nth-child(1)";
+var who = "div.title";
+var what = "div.artist";
+var number = "span.number";
+var item = "li[itemprop='track']";
 var what2 = ".tracks";
 var tracks = [];
 
-driver.get(where);
-driver
-  .wait(until.elementLocated(By.css(what2)))
-  .then(_ => driver.findElement(By.css(what2)).getAttribute("innerHTML"))
-  .then(_ => {
-    tracks.push(_);
-    console.log(_);
-  })
-  .then(
-    setTimeout(() => {
-      console.log(tracks);
-      driver.close();
-      driver.quit();
-    }, 5000)
-  );
-// driver.findElement(By.css(what2)).getAttribute("innerHTML").then(_ => {tracks = _; console.log(tarcks)});
+(async function example() {
+    let driver = await new Builder().forBrowser('chrome').build();
+    try {
+        await driver.get(where);
+        await driver.wait(until.elementLocated(By.css(what)));
+        let elements = await driver.findElements(By.css(item));
+        for(let e of elements) {
+            console.log(await e.getText());
+            tracks.push(await e.getText());
+        }
+        fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
+    }
+    finally {
+        await driver.quit();
+    }
+})();
