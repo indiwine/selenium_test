@@ -81,20 +81,32 @@ var model = {};
 var item = {};
 var items = {};
 var tracks = [];
+var urls = [];
 var i = 0;
 var temp = "";
 var good50 = [];
 
 async function getText(a, b) {
   let elements = await driver.findElements(By.css(a));
+  var itemKey = '';
+    if (a == who) itemKey = 'song'
+  //   if (a == who) itemKey= 'range'
+  //   if (a == who) itemKey= 'artist'
+  //   if (a == who) itemKey= 'img'
+  //   if (a == who) itemKey= 'shortMusicUrl'
+  //   if (a == who) itemKey= 'MusicUrl'
+  //   if (a == who) itemKey= 'ShazamUrl'
+  //   if (a == who) itemKey= 'AppleMusicUrl'
+  console.log(a);
   if (Array.isArray(b)) {
     for (let e of elements) {
       b.push(await e.getText());
     }
-    // console.log(temp)
+    // console.log(b)
     b.forEach(element => {
       i += 1;
-      item["it" + i] = { song: element };
+      item["it" + i] = { [itemKey]: element };
+    // item.song = element;
       items["it" + i] = item["it" + i];
     });
     console.log(items);
@@ -103,27 +115,42 @@ async function getText(a, b) {
   }
 }
 
-function getClear50() {
-  let elements = driver.findElements(By.css(tr));
+async function getClear50() {
+  let elements = await driver.findElements(By.css(tr));
   for (let e of elements) {
-    e.getAttribute("class").then(text => (temp = text));
-    if (temp == "last-visible") break;
-    good50.push(e);
-    // tracks.push(await e.getText());
+    await e.getAttribute("class").then(text => (temp = text));
+    if (temp == "hide") break;
+        await good50.push(e);
+        tracks.push(await e.getText());
   }
+}
+
+var ar1=[],ar2=[],ar3=[],ar4=[]
+
+async function sortCreate(){
+    tracks.forEach(el=>{
+        ar1.push(el.substring(el.indexOf('\n'),el.indexOf('\n',el.indexOf('\n')+1)));
+        ar2.push(el.substring(0,el.indexOf('\n')));
+        ar3.push(el.substring(el.indexOf('\n')+1));
+    })
+    console.log(ar1)
+    console.log(ar2)
+    console.log(ar3)
 }
 
 (async function example() {
   try {
     await driver.get(where);
     await driver.wait(until.elementLocated(By.css(what)));
-    // getClear50();
-
+    await getClear50();
+    await sortCreate();
+    // await fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
+// await getText(who,tracks);
+// await getText(what,tracks);
     // await getText(who,tracks);
     // tracks.forEach(element => {i+=1;item['it'+i]={"song":element};items['it'+i]=item['it'+i]});
     // console.log(items)
     // console.log(JSON.stringify(items));
-    // fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
     // fs.writeFile("artists.txt",JSON.parse(items),(err)=> {if (err) throw err; console.log('file is ok')})
   } finally {
     await driver.quit();
