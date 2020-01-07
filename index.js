@@ -7,7 +7,7 @@ const https = require("https");
 const ffmpeg = require("fluent-ffmpeg");
 const merge = ffmpeg();
 const dir = "./files";
-
+var ghj=0;
 var fileList = [];
 var listFileName = "list.txt";
 var fileNames = "";
@@ -29,7 +29,7 @@ function concatAudio() {
 
   merge
     .input(listFileName)
-    .inputOptions(["-f concat", "-safe 0"])
+    .inputOptions(["-f concat", "-safe 0", "-report"])
     .outputOptions("-c copy")
     .save("./readyToUpload/mergedAudio.m4a")
     .on("error", function(err) {
@@ -40,17 +40,25 @@ function concatAudio() {
     });
 }
 //88
-concatAudio();
 // downloading SHORT tracks
 //11
-var link1 =
-  "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview123/v4/22/e5/8e/22e58eeb-5916-c584-257c-735e1b4b0175/mzaf_17966999117302129087.plus.aac.p.m4a";
-var link2 =
-  "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview113/v4/e3/36/16/e33616f2-ce4a-2daf-2672-257f03f01b93/mzaf_2704479078257524742.plus.aac.p.m4a";
-var fName1 = "f1.m4a";
-var fName2 = "f2.m4a";
-
-// download(link1, fName1);
+var removeFromFile = new Promise(function(resolve, reject) {
+  fs.readdir(dir, (err, files) => {
+    try {
+      if (files.length != 0) {
+        files.forEach(file => {
+          fs.unlinkSync(dir + "/" + file);
+        });
+        resolve("all files deleted");
+      } else {
+        resolve("there is no files");
+      }
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+});
 
 function download(url, dest, cb) {
   var file = fs.createWriteStream(dest);
@@ -60,6 +68,11 @@ function download(url, dest, cb) {
       file.on("finish", function() {
         file.close(cb); // close() is async, call cb after close completes.
       });
+    })
+    .on('close', function(){
+        ghj=ghj+1;
+        // console.log('file downloaded');
+        console.log(ghj);
     })
     .on("error", function(err) {
       // Handle errors
@@ -71,22 +84,15 @@ function download(url, dest, cb) {
 //11
 
 var where = "https://www.shazam.com/charts/top-200/ukraine";
-// var who = "div.title";
 var what = "div.artist";
-// var number = "span.number";
 var tr = "ul.tracks li[itemprop='track']";
-// var what2 = ".tracks";
-// var model = {};
-// var item = {};
-// var items = {};
 var tracks = [];
 var urlSh = [];
+var urlShMusExt = [];
 var urlShortMusic = [];
 var urlImg = [];
-// var i = 0;
 var temp = "";
 var temp2 = "";
-// var good50 = [];
 
 // async function getText(a, b) {
 //   let elements = await driver.findElements(By.css(a));
@@ -133,14 +139,18 @@ async function getClear50() {
       q.indexOf('"><div class="grid')
     );
 
+    var y = t.substring(t.lastIndexOf("."));
+    // console.log("!!!!!!!!!!!! " + y);
+
     var w = q.substring(
-        q.indexOf('style="background-image: url(&quot;') +
-          'style="background-image: url(&quot;'.length,
-        q.indexOf('&quot;);"> <ul class="')
-      );
+      q.indexOf('style="background-image: url(&quot;') +
+        'style="background-image: url(&quot;'.length,
+      q.indexOf('&quot;);"> <ul class="')
+    );
     // console.log("!!!!!!!!!!!! " + w.substring(0, 60));
 
     urlSh.push(z);
+    urlShMusExt.push(y);
     urlShortMusic.push(t);
     urlImg.push(w);
     if (temp == "hide") break;
@@ -150,8 +160,10 @@ async function getClear50() {
   //   console.log(urls);
 }
 
-var ar1 = [],ar2 = [],ar3 = [];
-  ar4 = {};
+var ar1 = [],
+  ar2 = [],
+  ar3 = [];
+ar4 = {};
 
 async function sortCreate() {
   tracks.forEach(el => {
@@ -167,31 +179,96 @@ async function sortCreate() {
       result1.urlImg = urlImg[index];
       result1.urlSh = urlSh[index];
       result1.urlShortMusic = urlShortMusic[index];
+      result1.urlShMusExt = urlShMusExt[index];
       result["it" + (index + 1)] = result1;
     }
     return result;
   }, ar4);
-    console.log(ar4);
+  // console.log(ar4);
 }
 
-(async function example() {
-  try {
-    await driver.get(where);
-    await driver.wait(until.elementLocated(By.css(what)));
-    await getClear50();
-    await sortCreate();
-    // await fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
-    // await getText(who,tracks);
-    // await getText(what,tracks);
-    // await getText(who,tracks);
-    // tracks.forEach(element => {i+=1;item['it'+i]={"song":element};items['it'+i]=item['it'+i]});
-    // console.log(items)
-    // console.log(JSON.stringify(items));
-    // fs.writeFile("artists.txt",JSON.parse(items),(err)=> {if (err) throw err; console.log('file is ok')})
-  } finally {
-    await driver.quit();
+var ast1 = "";
+
+var qsd = new Promise(function(resolve, reject) {
+    var i = 0;
+    var ast = "";
+    for (e in ar4) {
+      i = i + 1;
+      if (i < 10) {
+        ast = "0" + i;
+      }
+      if (i >= 10) {
+        ast = i;
+      }
+      download(ar4[e].urlShortMusic, dir + "/" + ast + ar4[e].urlShMusExt);
+    }
+    if(ghj==50){
+        resolve('ok')
+    }  
+})
+
+function cyclicDownload() {
+  var i = 0;
+  var ast = "";
+  for (e in ar4) {
+    i = i + 1;
+    if (i < 10) {
+      ast = "0" + i;
+    }
+    if (i >= 10) {
+      ast = i;
+    }
+    download(ar4[e].urlShortMusic, dir + "/" + ast + ar4[e].urlShMusExt);
   }
-})();
+//   return ghj
+}
+
+// var tyu = new Promise(function(resolve, reject) {
+  (async function example() {
+    try {
+      await driver.get(where);
+      await driver.wait(until.elementLocated(By.css(what)));
+      await getClear50();
+      await sortCreate();
+      await removeFromFile
+        .then(res => {
+          qsd;
+          console.log(res);
+        }).then(_ =>{if (_==ok){concatAudio()}})
+        .catch(err => console.log(err));
+    //   console.log(ghj);
+
+    //   await concatAudio();
+      // await fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
+      // tracks.forEach(element => {i+=1;item['it'+i]={"song":element};items['it'+i]=item['it'+i]});
+      // console.log(JSON.stringify(items));
+      // fs.writeFile("artists.txt",JSON.parse(items),(err)=> {if (err) throw err; console.log('file is ok')})
+    } catch (err) {
+      console.log(err);
+    } finally {
+      // concatAudio();
+    //   resolve("ok");
+      await driver.quit();
+    }
+  })();
+// });
+
+
+
+// function check(callback) {
+//     // do a bunch of stuff
+//     if (ghj==50) {
+//         // call the callback to notify other code
+//         callback();
+//     }
+// }
+
+// tyu
+//   .then(_ => {
+//     concatAudio();
+//     console.log(_);
+//   })
+//   .catch(err => console.log(err));
 
 /* to do  
 0. rename variables
