@@ -1,7 +1,75 @@
-const {Builder, By, until} = require('selenium-webdriver');
-const driver = new Builder().forBrowser('chrome').build();
-const audioconcat = require('audioconcat');
-const fs = require('fs');
+const { Builder, By, until } = require("selenium-webdriver");
+const driver = new Builder().forBrowser("chrome").build();
+
+const fs = require("fs");
+const http = require("http");
+const https = require("https");
+const ffmpeg = require("fluent-ffmpeg");
+const merge = ffmpeg();
+const dir = "./files";
+
+var fileList = [];
+var listFileName = "list.txt";
+var fileNames = "";
+
+// reading and writing track list to file
+//88
+function concatAudio(){
+
+fs.readdir(dir, (err, files) => {
+  files.forEach(file => {
+    fileList.push(file);
+  });
+  console.log(fileList);
+  fileList.forEach(fileName => {
+    fileNames = fileNames + "file '" + dir + "/" + fileName + "'\n";
+  });
+  console.log(fileNames);
+  fs.writeFileSync(listFileName, fileNames);
+});
+
+merge
+  .input(listFileName)
+  .inputOptions(["-f concat", "-safe 0"])
+  .outputOptions("-c copy")
+  .save("./readyToUpload/mergedAudio.m4a")
+  .on("error", function(err) {
+    console.log("Error " + err.message);
+  })
+  .on("end", function() {
+    console.log("Finished!");
+  });
+}
+//88
+concatAudio();
+// downloading SHORT tracks
+//11
+var link1 =
+  "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview123/v4/22/e5/8e/22e58eeb-5916-c584-257c-735e1b4b0175/mzaf_17966999117302129087.plus.aac.p.m4a";
+var link2 =
+  "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview113/v4/e3/36/16/e33616f2-ce4a-2daf-2672-257f03f01b93/mzaf_2704479078257524742.plus.aac.p.m4a";
+var fName1 = "f1.m4a";
+var fName2 = "f2.m4a";
+
+// download(link1, fName1);
+
+function download(url, dest, cb) {
+    var file = fs.createWriteStream(dest);
+    var request = https
+      .get(url, function(response) {
+        response.pipe(file);
+        file.on("finish", function() {
+          file.close(cb); // close() is async, call cb after close completes.
+        });
+      })
+      .on("error", function(err) {
+        // Handle errors
+        fs.unlink(dest); // Delete the file async. (But we don't check the result)
+        if (cb) cb(err.message);
+      });
+  };
+  
+//11
 
 var where = "https://www.shazam.com/charts/top-200/ukraine";
 var who = "div.title";
@@ -14,98 +82,56 @@ var item = {};
 var items = {};
 var tracks = [];
 var i = 0;
-var temp='';
+var temp = "";
 var good50 = [];
 
-async function getText(a,b){
-    let elements = await driver.findElements(By.css(a));
-    if (Array.isArray(b)){
-        for(let e of elements) {
-            
-            b.push(await e.getText());
-        }
-        // console.log(temp)
-        b.forEach(element => {i+=1;item['it'+i]={"song":element};items['it'+i]=item['it'+i]});
-        console.log(items)
-    }else{
-        console.error("second argument is not an array")
+async function getText(a, b) {
+  let elements = await driver.findElements(By.css(a));
+  if (Array.isArray(b)) {
+    for (let e of elements) {
+      b.push(await e.getText());
     }
+    // console.log(temp)
+    b.forEach(element => {
+      i += 1;
+      item["it" + i] = { song: element };
+      items["it" + i] = item["it" + i];
+    });
+    console.log(items);
+  } else {
+    console.error("second argument is not an array");
+  }
 }
 
-function getClear50(){
-    let elements = driver.findElements(By.css(tr));
-        for(let e of elements) {
-            e.getAttribute('class').then(text => temp = text)
-            if (temp == 'last-visible') break;
-            good50.push(e);
-            // tracks.push(await e.getText());
-        }
+function getClear50() {
+  let elements = driver.findElements(By.css(tr));
+  for (let e of elements) {
+    e.getAttribute("class").then(text => (temp = text));
+    if (temp == "last-visible") break;
+    good50.push(e);
+    // tracks.push(await e.getText());
+  }
 }
 
 (async function example() {
-    try {
-        await driver.get(where);
-        await driver.wait(until.elementLocated(By.css(what)));
-        // getClear50();
+  try {
+    await driver.get(where);
+    await driver.wait(until.elementLocated(By.css(what)));
+    // getClear50();
 
-        // await getText(who,tracks);
-        // tracks.forEach(element => {i+=1;item['it'+i]={"song":element};items['it'+i]=item['it'+i]});
-        // console.log(items)
-        // console.log(JSON.stringify(items));
-        // fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
-        // fs.writeFile("artists.txt",JSON.parse(items),(err)=> {if (err) throw err; console.log('file is ok')})
-    }
-    finally {
-        await driver.quit();
-    }
+    // await getText(who,tracks);
+    // tracks.forEach(element => {i+=1;item['it'+i]={"song":element};items['it'+i]=item['it'+i]});
+    // console.log(items)
+    // console.log(JSON.stringify(items));
+    // fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
+    // fs.writeFile("artists.txt",JSON.parse(items),(err)=> {if (err) throw err; console.log('file is ok')})
+  } finally {
+    await driver.quit();
+  }
 })();
 
- // ********************* concat audio
-// var songs = [
-//   'beatles.mp3',
-//   'greenday.mp3',
-//   'u2.mp3'
-// ]
- 
-// audioconcat(songs)
-//   .concat('all.mp3')
-//   .on('start', function (command) {
-//     console.log('ffmpeg process started:', command)
-//   })
-//   .on('error', function (err, stdout, stderr) {
-//     console.error('Error:', err)
-//     console.error('ffmpeg stderr:', stderr)
-//   })
-//   .on('end', function (output) {
-//     console.error('Audio created in:', output)
-//   })
 
 
-//********************* download audio
-
-const http = require('https');
-
-var link = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview123/v4/22/e5/8e/22e58eeb-5916-c584-257c-735e1b4b0175/mzaf_17966999117302129087.plus.aac.p.m4a"
-var fName = 'f.m4a'
-// const file = fs.createWriteStream("file.m4a");
-// const request = http.get(", function(response) {
-//   response.pipe(file);
-// });
-
-var download = function(url, dest, cb) {
-    var file = fs.createWriteStream(dest);
-    var request = http.get(url, function(response) {
-      response.pipe(file);
-      file.on('finish', function() {
-        file.close(cb);  // close() is async, call cb after close completes.
-      });
-    }).on('error', function(err) { // Handle errors
-      fs.unlink(dest); // Delete the file async. (But we don't check the result)
-      if (cb) cb(err.message);
-    });
-  };
-
-  download(link,fName)
 
 /* to do  
 0. rename variables
