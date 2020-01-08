@@ -7,12 +7,14 @@ const https = require("https");
 const ffmpeg = require("fluent-ffmpeg");
 const merge = ffmpeg();
 const dir = "./files";
+const dir2 = "./readyToUpload";
+const dir3 = "./img";
 var ghj = 0;
 var fileList = [];
 var listFileName = "list.txt";
 var fileNames = "";
 
-var where = "https://www.shazam.com/charts/top-200/ukraine";
+var where = "https://www.shazam.com/charts/top-200/russia";
 var what = "div.artist";
 var tr = "ul.tracks li[itemprop='track']";
 var tracks = [];
@@ -22,6 +24,17 @@ var urlShortMusic = [];
 var urlImg = [];
 var temp = "";
 var temp2 = "";
+
+function checkDir(d){
+  if (!fs.existsSync(d)){
+    fs.mkdirSync(d);
+  }
+}
+
+checkDir(dir);
+checkDir(dir2);
+checkDir(dir3);
+
 
 // // reading and writing track list to file
 // //88
@@ -53,21 +66,6 @@ var temp2 = "";
 // //88
 // // downloading SHORT tracks
 
-var removeFromFile = new Promise(function(resolve, reject) {
-  fs.readdir(dir, (err, files) => {
-    try {
-      if (files.length != 0) {
-        files.forEach(file => {
-          fs.unlinkSync(dir + "/" + file);
-        });
-        resolve("all files deleted");
-      }
-    } catch (err) {
-      console.log(err);
-      reject(err);
-    }
-  });
-});
 
 function download(url, dest, cb) {
   var file = fs.createWriteStream(dest);
@@ -157,6 +155,17 @@ async function sortCreate() {
 function cyclicDownload() {
   var i = 0;
   var ast = "";
+
+  fs.readdir(dir, (err, files) => {
+      if (files.length != 0) {
+        files.forEach(file => {
+          fs.unlinkSync(dir + "/" + file);
+        });
+      }
+    }
+  )
+
+
   for (e in ar4) {
     i = i + 1;
     if (i < 10) {
@@ -175,15 +184,9 @@ function cyclicDownload() {
     await driver.wait(until.elementLocated(By.css(what)));
     await getClear50();
     await sortCreate();
-    await removeFromFile
-      .then(res => {
-        cyclicDownload();
-        console.log(res);
-      })
-      .catch(err => console.log(err));
-
-    //   await concatAudio();
-    // await fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
+    await cyclicDownload();
+    // await concatAudio();
+    await fs.writeFile("new.txt",tracks,(err)=> {if (err) throw err; console.log('file is ok')})
     // tracks.forEach(element => {i+=1;item['it'+i]={"song":element};items['it'+i]=item['it'+i]});
     // console.log(JSON.stringify(items));
     // fs.writeFile("artists.txt",JSON.parse(items),(err)=> {if (err) throw err; console.log('file is ok')})
