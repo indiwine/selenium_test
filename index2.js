@@ -7,6 +7,7 @@ const dir = "./files";
 var fileList = [];
 var listFileName = "list.txt";
 var fileNames = "";
+var saveString = "./readyToUpload/mergedAudio.m4a";
 
 function concatAudio() {
   fs.readdir(dir, (err, files) => {
@@ -25,7 +26,7 @@ function concatAudio() {
     .input(listFileName)
     .inputOptions(["-f concat", "-safe 0","-report"])
     .outputOptions("-c copy")
-    .save("./readyToUpload/mergedAudio.m4a")
+    .save(saveString)
     .on("error", function(err) {
       console.log("Error " + err.message);
     })
