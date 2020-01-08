@@ -23,7 +23,7 @@ function concatAudio() {
 
   merge
     .input(listFileName)
-    .inputOptions(["-f concat", "-safe 0"])
+    .inputOptions(["-f concat", "-safe 0","-report"])
     .outputOptions("-c copy")
     .save("./readyToUpload/mergedAudio.m4a")
     .on("error", function(err) {
