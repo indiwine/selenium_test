@@ -2,4 +2,5 @@
 /files
 /readyToUpload
 *.log
+*.txt
 package-lock.json
