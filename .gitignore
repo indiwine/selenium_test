@@ -1,6 +1,13 @@
-/node_modules
-/files
-/readyToUpload
+*-debug.log
+*-error.log
 *.log
 *.txt
+/.nyc_output
+/dist
+/files
+/node_modules
+/readyToUpload
+/tmp
+/yarn.lock
+node_modules
 package-lock.json

@@ -1,19 +1,49 @@
 {
-  "name": "selenium",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js && node index2.js && node index3.js",
-    "start2": "node index2.js && index3.js",
-    "test": "node index2.js && index3.js"
+  "name": "shazam-grab",
+  "version": "0.0.1",
+  "bin": {
+    "shazam-grab": "./bin/run"
   },
-  "author": "",
-  "license": "ISC",
+  "bugs": "https://github.com/indiwine/selenium_test/issues",
   "dependencies": {
+    "@oclif/command": "^1.5.19",
+    "@oclif/config": "^1.13.3",
+    "@oclif/plugin-help": "^2.2.3",
+    "cli-ux": "^5.4.1",
     "dateformat": "^3.0.3",
     "fluent-ffmpeg": "^2.1.2",
     "nodemon": "^2.0.2",
-    "selenium-webdriver": "^3.6.0"
+    "selenium-webdriver": "^3.6.0",
+    "tempy": "^0.3.0"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1.22.2",
+    "eslint": "^5.16.0",
+    "eslint-config-oclif": "^3.1.0",
+    "rimraf": "^3.0.0"
+  },
+  "engines": {
+    "node": "^8.9"
+  },
+  "files": [
+    "/bin",
+    "/src"
+  ],
+  "homepage": "https://github.com/indiwine/selenium_test",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "ISC",
+  "main": "src/index.js",
+  "oclif": {
+    "bin": "shazam-grab"
+  },
+  "repository": "indiwine/selenium_test",
+  "scripts": {
+    "posttest": "eslint .",
+    "prepack": "oclif-dev readme",
+    "run": "node bin/run",
+    "test": "echo NO TESTS",
+    "version": "oclif-dev readme && git add README.md"
   }
 }
