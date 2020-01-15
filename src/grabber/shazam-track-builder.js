@@ -4,14 +4,16 @@ const {By} = require('selenium-webdriver')
 class ShazamTrackBuilder {
   /**
    * @param {WebElement} node Track element to represent
+   * @param {ShazamGrabCommand} command instance of a command class
    */
-  constructor(node) {
+  constructor(node, command) {
     this.node = node
+    this.command = command
     this.track = new AudioTrack()
   }
 
   /**
-   * @return {Promise<AudioTrack>}
+   * @return {Promise<AudioTrack|boolean>}
    */
   async build() {
     await Promise.all([
@@ -21,6 +23,12 @@ class ShazamTrackBuilder {
       this._fetchAudioUrl(),
       this._fetchThumbnail(),
     ])
+
+    if (!this.track.audioUrl) {
+      this.command.warn('\nCannot find suitable link for audio. Skipping')
+      this.command.warn(this.track)
+      return false
+    }
 
     return this.track
   }

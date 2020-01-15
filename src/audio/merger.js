@@ -21,10 +21,12 @@ class Merger {
     try {
       await this._downloadAudio()
       this._generateExportList()
+      cli.action.start('Merging audio')
       await this._doMerge()
     } catch (error) {
       this.command.error(error)
     } finally {
+      cli.action.stop()
       this.pool.cleanUp()
     }
   }
@@ -40,7 +42,7 @@ class Merger {
 
     for (let track of this.pool.storage) {
       progressBar.update(track.position, {
-        current: `${track.artist} - ${track.title}`,
+        current: track.toString(),
       })
 
       // eslint-disable-next-line no-await-in-loop

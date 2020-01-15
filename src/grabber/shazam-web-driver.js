@@ -74,10 +74,12 @@ class ShazamWebDriver {
    * @private
    */
   async _parseTrack(node, position, done) {
-    const builder = new ShazamTrackBuilder(node)
+    const builder = new ShazamTrackBuilder(node, this.command)
     const trackInst = await builder.build()
-    trackInst.position = position
-    this.tracks.add(trackInst)
+    if (trackInst) {
+      trackInst.position = position
+      this.tracks.add(trackInst)
+    }
     done(position)
   }
 }

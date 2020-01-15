@@ -23,6 +23,10 @@ class AudioTrack {
     return this._tmpFilePath
   }
 
+  toString() {
+    return `${this.artist} - ${this.title}`
+  }
+
   fetchAudio() {
     return new Promise((resolve, reject) => {
       this._tmpFilePath = tempy.file({
