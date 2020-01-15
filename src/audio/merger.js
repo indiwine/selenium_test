@@ -28,6 +28,7 @@ class Merger {
     } finally {
       cli.action.stop()
       this.pool.cleanUp()
+      this._cleanUp()
     }
   }
 
@@ -40,13 +41,15 @@ class Merger {
       current: 'N/A',
     })
 
+    let i = 1
     for (let track of this.pool.storage) {
-      progressBar.update(track.position, {
+      progressBar.update(i, {
         current: track.toString(),
       })
 
       // eslint-disable-next-line no-await-in-loop
       await track.fetchAudio()
+      i++
     }
 
     progressBar.stop()
@@ -77,6 +80,12 @@ class Merger {
     }
 
     stream.close()
+  }
+
+  _cleanUp() {
+    if (this._exportListPath && fs.existsSync(this._exportListPath)) {
+      fs.unlinkSync(this._exportListPath)
+    }
   }
 }
 
